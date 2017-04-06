@@ -32,22 +32,33 @@ fn main() {
 
     for (key, value) in db.iterator(rocksdb::IteratorMode::Start) {
         let key_string = unsafe { str::from_utf8_unchecked((&key)) }.to_string();
-        let value_type = value[0] as char;
-        let value_as_string = match value_type {
-            'o' => "{}".to_string(),
-            'a' => "[]".to_string(),
-            's' => format!("\"{}\"", unsafe { str::from_utf8_unchecked((&value[1..])) }),
-            'T' => "true".to_string(),
-            'F' => "false".to_string(),
-            'f' => {
-                unsafe {
-                    let array = *(value[1..].as_ptr() as *const [_; 8]);
-                    format!("{}", std::mem::transmute::<[u8; 8], f64>(array))
-                }
+        let (type_, value_as_string) = match key_string.chars().next().unwrap() {
+            'V' => {
+                let value_type = value[0] as char;
+                let value_as_string = match value_type {
+                    'o' => "{}".to_string(),
+                    'a' => "[]".to_string(),
+                    's' => format!("\"{}\"", unsafe { str::from_utf8_unchecked((&value[1..])) }),
+                    'T' => "true".to_string(),
+                    'F' => "false".to_string(),
+                    'f' => {
+                        unsafe {
+                            let array = *(value[1..].as_ptr() as *const [_; 8]);
+                            format!("{}", std::mem::transmute::<[u8; 8], f64>(array))
+                        }
+                    },
+                     'N' => "null".to_string(),
+                     _ => format!("Unknown value type ({}): {:?}", value_type, value),
+                };
+                ("Doc".to_string(), value_as_string)
             },
-            'N' => "null".to_string(),
-            _ => format!("Unknown value type ({}): {:?}", value_type, value),
+            'W' => {
+                ("Word".to_string(), format!("{:?}", value))
+            }
+            _ => {
+                ("Unknown".to_string(), format!("{:?}", value))
+            }
         };
-        println!("{}:\t{}", key_string, value_as_string);
+        println!("{}\t{}\t{}", type_, key_string, value_as_string);
     }
 }
