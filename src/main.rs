@@ -53,7 +53,23 @@ fn main() {
                 ("Doc".to_string(), value_as_string)
             },
             'W' => {
-                ("Word".to_string(), format!("{:?}", value))
+                ("Stemmed".to_string(), format!("{:?}", value))
+            }
+            'f' => {
+                let number = unsafe {
+                    let array = *(value[..].as_ptr() as *const [_; 8]);
+                    format!("{}", std::mem::transmute::<[u8; 8], f64>(array))
+                };
+                ("Number".to_string(), number)
+            }
+            'T' => {
+                ("Bool".to_string(), "true".to_string())
+            }
+            'F' => {
+                ("Bool".to_string(), "false".to_string())
+            }
+            'N' => {
+                ("Null".to_string(), "null".to_string())
             }
             _ => {
                 ("Unknown".to_string(), format!("{:?}", value))
