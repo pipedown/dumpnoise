@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["Volker Mische <volker.mische@gmail.com>"]
 
 [dependencies]
-clap = "*"
+clap = "2.20.5"
 noise_search = "*"
-rocksdb = "*"
+rocksdb = "0.6.0"
